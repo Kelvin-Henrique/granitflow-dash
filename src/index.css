@@ -34,9 +34,9 @@ All colors MUST be HSL.
     --muted-foreground: 220 15% 45%;
 
     /* Accent - Vermelho 10% (CTAs críticos) */
-    --accent: 4 90% 58%;
+    --accent: 4 84% 50%;
     --accent-foreground: 0 0% 100%;
-    --accent-hover: 4 90% 52%;
+    --accent-hover: 4 84% 45%;
 
     /* Destructive */
     --destructive: 4 90% 58%;

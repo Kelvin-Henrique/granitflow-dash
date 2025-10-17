@@ -20,11 +20,20 @@ interface BentoCardProps {
 }
 
 export function BentoCard({ children, className, span = 3 }: BentoCardProps) {
+  const spanClass = {
+    1: "col-span-12 md:col-span-1",
+    2: "col-span-12 md:col-span-2",
+    3: "col-span-12 md:col-span-3",
+    4: "col-span-12 md:col-span-4",
+    6: "col-span-12 md:col-span-6",
+    12: "col-span-12",
+  }[span] || "col-span-12 md:col-span-3";
+
   return (
     <div
       className={cn(
         "bg-card rounded-lg p-6 shadow-md border border-border transition-shadow hover:shadow-lg",
-        `col-span-12 md:col-span-${span}`,
+        spanClass,
         className
       )}
     >
