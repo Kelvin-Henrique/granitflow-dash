@@ -1,4 +1,4 @@
-import { Home, Users, FolderKanban, Package, FileText, ClipboardList, Calendar, DollarSign } from "lucide-react";
+import { LayoutDashboard, Users, Briefcase, Package, FileText, ClipboardList, Calendar, DollarSign, Calculator, UsersRound } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import {
   Sidebar,
@@ -13,14 +13,16 @@ import {
 } from "@/components/ui/sidebar";
 
 const menuItems = [
-  { title: "Dashboard", url: "/", icon: Home },
+  { title: "Dashboard", url: "/", icon: LayoutDashboard },
   { title: "Clientes", url: "/customers", icon: Users },
-  { title: "Projetos", url: "/projects", icon: FolderKanban },
+  { title: "Projetos", url: "/projects", icon: Briefcase },
   { title: "Materiais", url: "/materials", icon: Package },
   { title: "Orçamentos", url: "/quotes", icon: FileText },
   { title: "Ordens de Serviço", url: "/orders", icon: ClipboardList },
   { title: "Agenda", url: "/schedule", icon: Calendar },
   { title: "Financeiro", url: "/finance", icon: DollarSign },
+  { title: "Calculadora", url: "/calculator", icon: Calculator },
+  { title: "Equipe", url: "/team", icon: UsersRound },
 ];
 
 export function AppSidebar() {

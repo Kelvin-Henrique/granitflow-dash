@@ -12,6 +12,10 @@ import Quotes from "./pages/Quotes";
 import Orders from "./pages/Orders";
 import Schedule from "./pages/Schedule";
 import Finance from "./pages/Finance";
+import Calculator from "./pages/Calculator";
+import Team from "./pages/Team";
+import Profile from "./pages/Profile";
+import Messages from "./pages/Messages";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -26,12 +30,23 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Dashboard />} />
             <Route path="/customers" element={<Customers />} />
+            <Route path="/customers/:id" element={<Customers />} />
             <Route path="/projects" element={<Projects />} />
+            <Route path="/projects/:id" element={<Projects />} />
             <Route path="/materials" element={<Materials />} />
+            <Route path="/materials/:id" element={<Materials />} />
             <Route path="/quotes" element={<Quotes />} />
+            <Route path="/quotes/:id" element={<Quotes />} />
             <Route path="/orders" element={<Orders />} />
+            <Route path="/orders/:id" element={<Orders />} />
             <Route path="/schedule" element={<Schedule />} />
+            <Route path="/schedule/:id" element={<Schedule />} />
             <Route path="/finance" element={<Finance />} />
+            <Route path="/calculator" element={<Calculator />} />
+            <Route path="/team" element={<Team />} />
+            <Route path="/team/:id" element={<Team />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/messages" element={<Messages />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

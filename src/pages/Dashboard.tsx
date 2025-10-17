@@ -1,4 +1,4 @@
-import { Users, FolderKanban, CheckCircle, FileText, DollarSign, Clock, AlertCircle, TrendingUp } from "lucide-react";
+import { Users, Briefcase, CheckCircle2, FileText, DollarSign, Calendar, AlertCircle, TrendingUp, ClipboardList } from "lucide-react";
 import { BentoGrid, BentoCard } from "@/components/BentoGrid";
 import { StatCard } from "@/components/StatCard";
 import { Button } from "@/components/ui/button";
@@ -57,42 +57,110 @@ export default function Dashboard() {
     return labels[status] || status;
   };
 
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat("pt-BR", {
+      style: "currency",
+      currency: "BRL",
+    }).format(value);
+  };
+
+  const revenueNumbers = {
+    billed: 45280,
+    toReceive: 23150,
+    overdue: 8900,
+    defaultRate: 2340,
+  };
+
   return (
-    <div className="space-y-6 animate-fade-in">
-      {/* Linha 1 - KPIs */}
+    <div className="space-y-4 animate-fade-in">
+      <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
+
+      {/* Ações Rápidas */}
+      <BentoGrid>
+        <BentoCard span={3}>
+          <div className="h-full p-6 cursor-pointer hover:shadow-lg transition-all bg-gradient-to-br from-primary/5 to-primary/10 border border-primary/20 rounded-lg" onClick={() => navigate("/quotes/new")}>
+            <div className="flex items-center gap-3">
+              <div className="p-3 bg-primary/10 rounded-lg">
+                <FileText className="h-6 w-6 text-primary" />
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Novo</p>
+                <p className="text-lg font-bold text-foreground">Orçamento</p>
+              </div>
+            </div>
+          </div>
+        </BentoCard>
+        <BentoCard span={3}>
+          <div className="h-full p-6 cursor-pointer hover:shadow-lg transition-all bg-gradient-to-br from-accent/5 to-accent/10 border border-accent/20 rounded-lg" onClick={() => navigate("/orders/new")}>
+            <div className="flex items-center gap-3">
+              <div className="p-3 bg-accent/10 rounded-lg">
+                <ClipboardList className="h-6 w-6 text-accent" />
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Nova</p>
+                <p className="text-lg font-bold text-foreground">Ordem de Serviço</p>
+              </div>
+            </div>
+          </div>
+        </BentoCard>
+        <BentoCard span={3}>
+          <div className="h-full p-6 cursor-pointer hover:shadow-lg transition-all bg-gradient-to-br from-info/5 to-info/10 border border-info/20 rounded-lg" onClick={() => navigate("/schedule/new")}>
+            <div className="flex items-center gap-3">
+              <div className="p-3 bg-info/10 rounded-lg">
+                <Calendar className="h-6 w-6 text-info" />
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Agendar</p>
+                <p className="text-lg font-bold text-foreground">Medição</p>
+              </div>
+            </div>
+          </div>
+        </BentoCard>
+        <BentoCard span={3}>
+          <div className="h-full p-6 cursor-pointer hover:shadow-lg transition-all bg-gradient-to-br from-success/5 to-success/10 border border-success/20 rounded-lg" onClick={() => navigate("/finance/payments/new")}>
+            <div className="flex items-center gap-3">
+              <div className="p-3 bg-success/10 rounded-lg">
+                <DollarSign className="h-6 w-6 text-success" />
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Registrar</p>
+                <p className="text-lg font-bold text-foreground">Pagamento</p>
+              </div>
+            </div>
+          </div>
+        </BentoCard>
+      </BentoGrid>
+
+      {/* KPIs */}
       <BentoGrid>
         <BentoCard span={3}>
           <StatCard
             title="Clientes Novos (Mês)"
-            value={stats.newCustomers}
+            value={stats.newCustomers.toString()}
             icon={Users}
-            trend={{ value: "8%", positive: true }}
-            onClick={() => navigate("/customers")}
+            trend={{ value: "+8%", positive: true }}
           />
         </BentoCard>
         <BentoCard span={3}>
           <StatCard
             title="Projetos Ativos"
-            value={stats.activeProjects}
-            icon={FolderKanban}
-            onClick={() => navigate("/projects")}
+            value={stats.activeProjects.toString()}
+            icon={Briefcase}
           />
         </BentoCard>
         <BentoCard span={3}>
           <StatCard
             title="Projetos Finalizados (Mês)"
-            value={stats.completedProjects}
-            icon={CheckCircle}
-            trend={{ value: "12%", positive: true }}
-            onClick={() => navigate("/projects")}
+            value={stats.completedProjects.toString()}
+            icon={CheckCircle2}
+            trend={{ value: "+12%", positive: true }}
           />
         </BentoCard>
         <BentoCard span={3}>
           <StatCard
             title="Orçamentos Abertos"
-            value={stats.openQuotes}
+            value={stats.openQuotes.toString()}
             icon={FileText}
-            onClick={() => navigate("/quotes")}
           />
         </BentoCard>
       </BentoGrid>
@@ -128,58 +196,31 @@ export default function Dashboard() {
         </BentoCard>
       </BentoGrid>
 
-      {/* Linha 3 - Faturamento */}
+      {/* Financeiro */}
       <BentoGrid>
         <BentoCard span={3}>
           <StatCard
             title="Faturado (Mês)"
-            value={revenue.billed}
+            value={formatCurrency(revenueNumbers.billed)}
             icon={TrendingUp}
             trend={{ value: "15%", positive: true }}
           />
         </BentoCard>
         <BentoCard span={3}>
-          <StatCard
-            title="A Receber"
-            value={revenue.toReceive}
-            icon={Clock}
-          />
+          <StatCard title="A Receber" value={formatCurrency(revenueNumbers.toReceive)} icon={Calendar} />
         </BentoCard>
         <BentoCard span={3}>
-          <StatCard
-            title="Em Aberto"
-            value={revenue.overdue}
-            icon={DollarSign}
-          />
+          <StatCard title="Em Aberto" value={formatCurrency(revenueNumbers.overdue)} icon={FileText} />
         </BentoCard>
         <BentoCard span={3}>
           <StatCard
             title="Inadimplência"
-            value={revenue.defaultRate}
+            value={formatCurrency(revenueNumbers.defaultRate)}
             icon={AlertCircle}
             trend={{ value: "3%", positive: false }}
           />
         </BentoCard>
       </BentoGrid>
-
-      {/* Ações Rápidas */}
-      <BentoCard span={12}>
-        <h2 className="text-lg font-semibold text-foreground mb-4">Ações Rápidas</h2>
-        <div className="flex flex-wrap gap-3">
-          <Button onClick={() => navigate("/quotes/new")} className="bg-primary hover:bg-primary-hover">
-            Novo Orçamento
-          </Button>
-          <Button onClick={() => navigate("/orders/new")} variant="outline">
-            Nova OS
-          </Button>
-          <Button onClick={() => navigate("/schedule")} variant="outline">
-            Agendar Medição
-          </Button>
-          <Button onClick={() => navigate("/finance")} variant="outline">
-            Registrar Pagamento
-          </Button>
-        </div>
-      </BentoCard>
     </div>
   );
 }

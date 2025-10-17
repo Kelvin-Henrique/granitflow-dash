@@ -126,38 +126,30 @@ export default function Finance() {
       </BentoGrid>
 
       {/* Resumo Mensal */}
-      <BentoGrid>
-        <BentoCard span={3}>
-          <StatCard
-            title="Faturado (Mês)"
-            value={formatCurrency(cashflow.month.billed)}
-            icon={TrendingUp}
-            trend={{ value: "15%", positive: true }}
-          />
-        </BentoCard>
-        <BentoCard span={3}>
-          <StatCard
-            title="A Receber"
-            value={formatCurrency(cashflow.month.toReceive)}
-            icon={Calendar}
-          />
-        </BentoCard>
-        <BentoCard span={3}>
-          <StatCard
-            title="Em Aberto"
-            value={formatCurrency(cashflow.month.overdue)}
-            icon={FileText}
-          />
-        </BentoCard>
-        <BentoCard span={3}>
-          <StatCard
-            title="Inadimplência"
-            value={formatCurrency(cashflow.month.defaultRate)}
-            icon={AlertCircle}
-            trend={{ value: "3%", positive: false }}
-          />
-        </BentoCard>
-      </BentoGrid>
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <StatCard
+          title="Faturado (Mês)"
+          value={formatCurrency(cashflow.month.billed)}
+          icon={TrendingUp}
+          trend={{ value: "15%", positive: true }}
+        />
+        <StatCard
+          title="A Receber"
+          value={formatCurrency(cashflow.month.toReceive)}
+          icon={Calendar}
+        />
+        <StatCard
+          title="Em Aberto"
+          value={formatCurrency(cashflow.month.overdue)}
+          icon={FileText}
+        />
+        <StatCard
+          title="Inadimplência"
+          value={formatCurrency(cashflow.month.defaultRate)}
+          icon={AlertCircle}
+          trend={{ value: "3%", positive: false }}
+        />
+      </div>
 
       {/* Movimentações Recentes */}
       <Card className="p-6">
