@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, Search, FileText, Calendar } from "lucide-react";
+import { Plus, Search, FileText, Calendar, DollarSign } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -106,6 +106,23 @@ export default function Orders() {
     order.project.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const groupedOrders = orders.reduce((acc, order) => {
+    if (!acc[order.status]) {
+      acc[order.status] = [];
+    }
+    acc[order.status].push(order);
+    return acc;
+  }, {} as Record<string, typeof orders>);
+
+  const statusColumns = [
+    { key: "orcamento", label: "Orçamento", color: "border-muted" },
+    { key: "aprovada", label: "Aprovada", color: "border-info" },
+    { key: "producao_interna", label: "Em Produção", color: "border-warning" },
+    { key: "aguardando_frete", label: "Aguardando Frete", color: "border-purple-500" },
+    { key: "instalacao", label: "Instalação", color: "border-primary" },
+    { key: "concluida", label: "Concluída", color: "border-success" },
+  ];
+
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="flex items-center justify-between">
@@ -128,35 +145,41 @@ export default function Orders() {
         </div>
       </Card>
 
-      <div className="space-y-3">
-        {filteredOrders.map((order) => (
-          <Card
-            key={order.id}
-            className="p-6 cursor-pointer hover:shadow-lg transition-all"
-            onClick={() => navigate(`/orders/${order.id}`)}
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex-1">
-                <div className="flex items-center gap-3 mb-2">
-                  <h3 className="font-semibold text-lg text-foreground">{order.client}</h3>
-                  <Badge className={getStatusColor(order.status)}>{getStatusLabel(order.status)}</Badge>
-                </div>
-                <p className="text-sm text-muted-foreground mb-3">{order.project}</p>
-                <div className="flex items-center gap-6 text-sm text-muted-foreground">
-                  <div className="flex items-center gap-2">
-                    <FileText className="h-4 w-4" />
-                    <span>OS #{order.id.toString().padStart(4, '0')}</span>
+      {/* Pipeline de OS */}
+      <div className="grid grid-cols-1 md:grid-cols-6 gap-4 overflow-x-auto">
+        {statusColumns.map((column) => (
+          <Card key={column.key} className={`p-4 border-t-4 ${column.color} min-w-[250px]`}>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-sm font-semibold text-foreground">{column.label}</h2>
+              <Badge variant="outline" className="text-xs">{groupedOrders[column.key]?.length || 0}</Badge>
+            </div>
+            <div className="space-y-3">
+              {(groupedOrders[column.key] || []).map((order) => (
+                <Card
+                  key={order.id}
+                  className="p-3 cursor-pointer hover:shadow-lg transition-all"
+                  onClick={() => navigate(`/orders/${order.id}`)}
+                >
+                  <div className="space-y-2">
+                    <div>
+                      <p className="text-xs text-muted-foreground">OS #{order.id.toString().padStart(4, "0")}</p>
+                      <h3 className="font-semibold text-sm text-foreground">{order.client}</h3>
+                      <p className="text-xs text-muted-foreground">{order.project}</p>
+                    </div>
+
+                    <div className="text-xs space-y-1">
+                      <div className="flex items-center gap-1 text-muted-foreground">
+                        <Calendar className="h-3 w-3" />
+                        <span>{order.deadline}</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <DollarSign className="h-3 w-3 text-success" />
+                        <span className="font-semibold text-foreground">{formatCurrency(order.value)}</span>
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Calendar className="h-4 w-4" />
-                    <span>Prazo: {order.deadline}</span>
-                  </div>
-                </div>
-              </div>
-              <div className="text-right">
-                <p className="text-2xl font-bold text-foreground">{formatCurrency(order.value)}</p>
-                <p className="text-xs text-muted-foreground mt-1">Criado em {order.date}</p>
-              </div>
+                </Card>
+              ))}
             </div>
           </Card>
         ))}

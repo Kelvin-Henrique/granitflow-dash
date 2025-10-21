@@ -17,6 +17,12 @@ import Team from "./pages/Team";
 import Profile from "./pages/Profile";
 import Messages from "./pages/Messages";
 import NotFound from "./pages/NotFound";
+import CustomerDetail from "./pages/CustomerDetail";
+import CustomerForm from "./pages/CustomerForm";
+import ProjectDetail from "./pages/ProjectDetail";
+import ProjectForm from "./pages/ProjectForm";
+import MaterialDetail from "./pages/MaterialDetail";
+import MaterialForm from "./pages/MaterialForm";
 
 const queryClient = new QueryClient();
 
@@ -30,24 +36,26 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Dashboard />} />
             <Route path="/customers" element={<Customers />} />
-            <Route path="/customers/:id" element={<Customers />} />
+            <Route path="/customers/new" element={<CustomerForm />} />
+            <Route path="/customers/:id" element={<CustomerDetail />} />
+            <Route path="/customers/:id/edit" element={<CustomerForm />} />
             <Route path="/projects" element={<Projects />} />
-            <Route path="/projects/:id" element={<Projects />} />
+            <Route path="/projects/new" element={<ProjectForm />} />
+            <Route path="/projects/:id" element={<ProjectDetail />} />
+            <Route path="/projects/:id/edit" element={<ProjectForm />} />
             <Route path="/materials" element={<Materials />} />
-            <Route path="/materials/:id" element={<Materials />} />
+            <Route path="/materials/new" element={<MaterialForm />} />
+            <Route path="/materials/:id" element={<MaterialDetail />} />
+            <Route path="/materials/:id/edit" element={<MaterialForm />} />
+            <Route path="/materials/:id/add-stock" element={<MaterialForm />} />
             <Route path="/quotes" element={<Quotes />} />
-            <Route path="/quotes/:id" element={<Quotes />} />
             <Route path="/orders" element={<Orders />} />
-            <Route path="/orders/:id" element={<Orders />} />
             <Route path="/schedule" element={<Schedule />} />
-            <Route path="/schedule/:id" element={<Schedule />} />
             <Route path="/finance" element={<Finance />} />
             <Route path="/calculator" element={<Calculator />} />
             <Route path="/team" element={<Team />} />
-            <Route path="/team/:id" element={<Team />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/messages" element={<Messages />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Layout>

@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { Plus, Calendar as CalendarIcon, Clock, MapPin, User } from "lucide-react";
+import { Plus, Calendar, Clock, MapPin, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
 import { useNavigate } from "react-router-dom";
 
 export default function Schedule() {
@@ -17,10 +18,9 @@ export default function Schedule() {
       customer: "João Silva",
       project: "Cozinha Granito",
       time: "09:00",
-      duration: "2h",
-      address: "Rua das Flores, 123 - São Paulo",
+      location: "Rua das Flores, 123",
       team: "Equipe A",
-      status: "confirmado",
+      status: "agendado",
     },
     {
       id: 2,
@@ -28,10 +28,9 @@ export default function Schedule() {
       customer: "Maria Santos",
       project: "Banheiro Mármore",
       time: "14:00",
-      duration: "4h",
-      address: "Av. Paulista, 456 - São Paulo",
+      location: "Av. Paulista, 456",
       team: "Equipe B",
-      status: "confirmado",
+      status: "em_andamento",
     },
     {
       id: 3,
@@ -39,10 +38,9 @@ export default function Schedule() {
       customer: "Pedro Costa",
       project: "Bancada Quartzito",
       time: "10:30",
-      duration: "1h",
-      address: "Rua Santos, 789 - Campinas",
+      location: "Rua Santos, 789",
       team: "Equipe C",
-      status: "pendente",
+      status: "concluido",
     },
   ];
 
@@ -66,23 +64,19 @@ export default function Schedule() {
     return labels[type] || type;
   };
 
-  const getStatusColor = (status: string) => {
-    const colors: Record<string, string> = {
-      confirmado: "bg-success/10 text-success",
-      pendente: "bg-warning/10 text-warning",
-      cancelado: "bg-destructive/10 text-destructive",
-    };
-    return colors[status] || "bg-muted text-muted-foreground";
-  };
+  const groupedEvents = events.reduce((acc, event) => {
+    if (!acc[event.status]) {
+      acc[event.status] = [];
+    }
+    acc[event.status].push(event);
+    return acc;
+  }, {} as Record<string, typeof events>);
 
-  const getStatusLabel = (status: string) => {
-    const labels: Record<string, string> = {
-      confirmado: "Confirmado",
-      pendente: "Pendente",
-      cancelado: "Cancelado",
-    };
-    return labels[status] || status;
-  };
+  const statusColumns = [
+    { key: "agendado", label: "Agendados", color: "border-info" },
+    { key: "em_andamento", label: "Em Andamento", color: "border-warning" },
+    { key: "concluido", label: "Concluídos", color: "border-success" },
+  ];
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -94,90 +88,79 @@ export default function Schedule() {
         </Button>
       </div>
 
-      <Card className="p-6">
-        <div className="flex items-center gap-4 mb-6">
-          <CalendarIcon className="h-5 w-5 text-primary" />
-          <h2 className="text-lg font-semibold text-foreground">
-            Hoje - {new Date(selectedDate).toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long" })}
-          </h2>
-        </div>
-
-        <div className="space-y-4">
-          {events.map((event) => (
-            <Card
-              key={event.id}
-              className="p-5 cursor-pointer hover:shadow-lg transition-all border-l-4"
-              style={{ borderLeftColor: event.type === "medicao" ? "hsl(217, 91%, 60%)" : event.type === "instalacao" ? "hsl(220, 70%, 13%)" : "hsl(38, 92%, 50%)" }}
-              onClick={() => navigate(`/schedule/${event.id}`)}
-            >
-              <div className="space-y-3">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Badge className={getTypeColor(event.type)}>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {statusColumns.map((column) => (
+          <Card key={column.key} className={`p-4 border-t-4 ${column.color}`}>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold text-foreground">{column.label}</h2>
+              <Badge variant="outline">{groupedEvents[column.key]?.length || 0}</Badge>
+            </div>
+            <div className="space-y-3">
+              {(groupedEvents[column.key] || []).map((event) => (
+                <Card
+                  key={event.id}
+                  className="p-4 cursor-pointer hover:shadow-lg transition-all"
+                  onClick={() => navigate(`/schedule/${event.id}`)}
+                >
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <Badge className={getTypeColor(event.type)} variant="outline">
                         {getTypeLabel(event.type)}
                       </Badge>
-                      <Badge className={getStatusColor(event.status)} variant="outline">
-                        {getStatusLabel(event.status)}
-                      </Badge>
                     </div>
-                    <h3 className="font-semibold text-lg text-foreground">{event.customer}</h3>
-                    <p className="text-sm text-muted-foreground">{event.project}</p>
-                  </div>
-                  <div className="text-right">
-                    <div className="flex items-center gap-2 text-foreground font-semibold">
-                      <Clock className="h-4 w-4" />
-                      <span>{event.time}</span>
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-1">{event.duration}</p>
-                  </div>
-                </div>
 
-                <div className="space-y-2 text-sm">
-                  <div className="flex items-start gap-2 text-muted-foreground">
-                    <MapPin className="h-4 w-4 mt-0.5 flex-shrink-0" />
-                    <span>{event.address}</span>
+                    <div>
+                      <h3 className="font-semibold text-foreground">{event.customer}</h3>
+                      <p className="text-sm text-muted-foreground">{event.project}</p>
+                    </div>
+
+                    <div className="space-y-2 text-sm">
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <Clock className="h-3 w-3" />
+                        <span>{event.time}</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <Calendar className="h-3 w-3" />
+                        <span>{selectedDate}</span>
+                      </div>
+                      {event.location && (
+                        <div className="flex items-center gap-2 text-muted-foreground">
+                          <MapPin className="h-3 w-3" />
+                          <span className="text-xs">{event.location}</span>
+                        </div>
+                      )}
+                    </div>
+
+                    {event.team && (
+                      <div className="flex items-center gap-2 pt-2 border-t border-border">
+                        <Users className="h-3 w-3 text-muted-foreground" />
+                        <span className="text-xs text-muted-foreground">{event.team}</span>
+                      </div>
+                    )}
                   </div>
-                  <div className="flex items-center gap-2 text-muted-foreground">
-                    <User className="h-4 w-4" />
-                    <span>{event.team}</span>
-                  </div>
-                </div>
-              </div>
-            </Card>
-          ))}
-        </div>
-      </Card>
+                </Card>
+              ))}
+            </div>
+          </Card>
+        ))}
+      </div>
 
       <Card className="p-6">
-        <h3 className="font-semibold text-foreground mb-4">Capacidade das Equipes</h3>
-        <div className="space-y-3">
-          <div>
-            <div className="flex items-center justify-between text-sm mb-2">
-              <span className="text-muted-foreground">Equipe A</span>
-              <span className="font-medium text-foreground">2 / 3 agendamentos</span>
+        <h2 className="text-xl font-semibold text-foreground mb-4">Capacidade da Equipe</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-muted-foreground">Equipe A</span>
+              <span className="text-sm font-medium text-foreground">3/4 agendamentos</span>
             </div>
-            <div className="w-full bg-muted rounded-full h-2">
-              <div className="bg-success h-2 rounded-full" style={{ width: "66%" }} />
-            </div>
+            <Progress value={75} className="h-2" />
           </div>
-          <div>
-            <div className="flex items-center justify-between text-sm mb-2">
-              <span className="text-muted-foreground">Equipe B</span>
-              <span className="font-medium text-foreground">3 / 3 agendamentos</span>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-muted-foreground">Equipe B</span>
+              <span className="text-sm font-medium text-foreground">2/4 agendamentos</span>
             </div>
-            <div className="w-full bg-muted rounded-full h-2">
-              <div className="bg-warning h-2 rounded-full" style={{ width: "100%" }} />
-            </div>
-          </div>
-          <div>
-            <div className="flex items-center justify-between text-sm mb-2">
-              <span className="text-muted-foreground">Equipe C</span>
-              <span className="font-medium text-foreground">1 / 3 agendamentos</span>
-            </div>
-            <div className="w-full bg-muted rounded-full h-2">
-              <div className="bg-primary h-2 rounded-full" style={{ width: "33%" }} />
-            </div>
+            <Progress value={50} className="h-2" />
           </div>
         </div>
       </Card>
