@@ -23,6 +23,7 @@ import ProjectDetail from "./pages/ProjectDetail";
 import ProjectForm from "./pages/ProjectForm";
 import MaterialDetail from "./pages/MaterialDetail";
 import MaterialForm from "./pages/MaterialForm";
+import TransactionForm from "./pages/TransactionForm";
 
 const queryClient = new QueryClient();
 
@@ -52,6 +53,7 @@ const App = () => (
             <Route path="/orders" element={<Orders />} />
             <Route path="/schedule" element={<Schedule />} />
             <Route path="/finance" element={<Finance />} />
+            <Route path="/finance/transaction/new" element={<TransactionForm />} />
             <Route path="/calculator" element={<Calculator />} />
             <Route path="/team" element={<Team />} />
             <Route path="/profile" element={<Profile />} />

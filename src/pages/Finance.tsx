@@ -1,10 +1,19 @@
-import { TrendingUp, TrendingDown, DollarSign, AlertCircle, Calendar, FileText } from "lucide-react";
+import { useState } from "react";
+import { TrendingUp, TrendingDown, DollarSign, AlertCircle, Calendar, FileText, Download, Plus, Filter } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { BentoGrid, BentoCard } from "@/components/BentoGrid";
 import { StatCard } from "@/components/StatCard";
+import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useNavigate } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Finance() {
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const [selectedPeriod, setSelectedPeriod] = useState("month");
+  const [selectedMonth, setSelectedMonth] = useState("10");
   // Mock data
   const cashflow = {
     today: {
@@ -93,9 +102,101 @@ export default function Finance() {
     return labels[status] || status;
   };
 
+  const handleExport = () => {
+    toast({
+      title: "Exportando relatório...",
+      description: "O arquivo será baixado em instantes.",
+    });
+    
+    // Simula exportação
+    setTimeout(() => {
+      toast({
+        title: "Relatório exportado!",
+        description: "O arquivo foi salvo com sucesso.",
+      });
+    }, 1500);
+  };
+
+  const getPeriodLabel = () => {
+    const labels: Record<string, string> = {
+      month: "Mês Atual",
+      quarter: "Trimestre",
+      semester: "Semestre",
+      year: "Ano",
+    };
+    return labels[selectedPeriod] || "Período";
+  };
+
+  const months = [
+    { value: "01", label: "Janeiro" },
+    { value: "02", label: "Fevereiro" },
+    { value: "03", label: "Março" },
+    { value: "04", label: "Abril" },
+    { value: "05", label: "Maio" },
+    { value: "06", label: "Junho" },
+    { value: "07", label: "Julho" },
+    { value: "08", label: "Agosto" },
+    { value: "09", label: "Setembro" },
+    { value: "10", label: "Outubro" },
+    { value: "11", label: "Novembro" },
+    { value: "12", label: "Dezembro" },
+  ];
+
   return (
     <div className="space-y-6 animate-fade-in">
-      <h1 className="text-2xl font-bold text-foreground">Financeiro</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold text-foreground">Financeiro</h1>
+        <div className="flex gap-3">
+          <Button variant="outline" onClick={handleExport}>
+            <Download className="mr-2 h-4 w-4" />
+            Exportar Relatório
+          </Button>
+          <Button onClick={() => navigate("/finance/transaction/new")} className="bg-accent hover:bg-accent-hover">
+            <Plus className="mr-2 h-4 w-4" />
+            Nova Movimentação
+          </Button>
+        </div>
+      </div>
+
+      {/* Filtros */}
+      <Card className="p-4">
+        <div className="flex flex-wrap items-center gap-4">
+          <div className="flex items-center gap-2">
+            <Filter className="h-4 w-4 text-muted-foreground" />
+            <span className="text-sm font-medium text-foreground">Período:</span>
+          </div>
+          <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="month">Mensal</SelectItem>
+              <SelectItem value="quarter">Trimestral</SelectItem>
+              <SelectItem value="semester">Semestral</SelectItem>
+              <SelectItem value="year">Anual</SelectItem>
+            </SelectContent>
+          </Select>
+          
+          {selectedPeriod === "month" && (
+            <Select value={selectedMonth} onValueChange={setSelectedMonth}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {months.map((month) => (
+                  <SelectItem key={month.value} value={month.value}>
+                    {month.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+          
+          <Badge variant="outline" className="ml-auto">
+            Visualizando: {getPeriodLabel()}
+          </Badge>
+        </div>
+      </Card>
 
       {/* Fluxo do Dia */}
       <BentoGrid>
@@ -125,31 +226,39 @@ export default function Finance() {
         </BentoCard>
       </BentoGrid>
 
-      {/* Resumo Mensal */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <StatCard
-          title="Faturado (Mês)"
-          value={formatCurrency(cashflow.month.billed)}
-          icon={TrendingUp}
-          trend={{ value: "15%", positive: true }}
-        />
-        <StatCard
-          title="A Receber"
-          value={formatCurrency(cashflow.month.toReceive)}
-          icon={Calendar}
-        />
-        <StatCard
-          title="Em Aberto"
-          value={formatCurrency(cashflow.month.overdue)}
-          icon={FileText}
-        />
-        <StatCard
-          title="Inadimplência"
-          value={formatCurrency(cashflow.month.defaultRate)}
-          icon={AlertCircle}
-          trend={{ value: "3%", positive: false }}
-        />
-      </div>
+      {/* Resumo do Período */}
+      <BentoGrid>
+        <BentoCard span={3}>
+          <StatCard
+            title="Faturado"
+            value={formatCurrency(cashflow.month.billed)}
+            icon={TrendingUp}
+            trend={{ value: "15%", positive: true }}
+          />
+        </BentoCard>
+        <BentoCard span={3}>
+          <StatCard
+            title="A Receber"
+            value={formatCurrency(cashflow.month.toReceive)}
+            icon={Calendar}
+          />
+        </BentoCard>
+        <BentoCard span={3}>
+          <StatCard
+            title="Em Aberto"
+            value={formatCurrency(cashflow.month.overdue)}
+            icon={FileText}
+          />
+        </BentoCard>
+        <BentoCard span={3}>
+          <StatCard
+            title="Inadimplência"
+            value={formatCurrency(cashflow.month.defaultRate)}
+            icon={AlertCircle}
+            trend={{ value: "3%", positive: false }}
+          />
+        </BentoCard>
+      </BentoGrid>
 
       {/* Movimentações Recentes */}
       <Card className="p-6">
