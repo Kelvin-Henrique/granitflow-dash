@@ -13,7 +13,7 @@ export function Layout({ children }: LayoutProps) {
   const navigate = useNavigate();
 
   return (
-    <SidebarProvider>
+    <SidebarProvider defaultOpen={true}>
       <div className="min-h-screen flex w-full bg-background">
         <AppSidebar />
         <main className="flex-1 overflow-auto">

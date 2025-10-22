@@ -24,6 +24,13 @@ import ProjectForm from "./pages/ProjectForm";
 import MaterialDetail from "./pages/MaterialDetail";
 import MaterialForm from "./pages/MaterialForm";
 import TransactionForm from "./pages/TransactionForm";
+import QuoteDetail from "./pages/QuoteDetail";
+import QuoteForm from "./pages/QuoteForm";
+import OrderDetail from "./pages/OrderDetail";
+import OrderForm from "./pages/OrderForm";
+import ScheduleDetail from "./pages/ScheduleDetail";
+import ScheduleForm from "./pages/ScheduleForm";
+import TeamDetail from "./pages/TeamDetail";
 
 const queryClient = new QueryClient();
 
@@ -50,12 +57,22 @@ const App = () => (
             <Route path="/materials/:id/edit" element={<MaterialForm />} />
             <Route path="/materials/:id/add-stock" element={<MaterialForm />} />
             <Route path="/quotes" element={<Quotes />} />
+            <Route path="/quotes/new" element={<QuoteForm />} />
+            <Route path="/quotes/:id" element={<QuoteDetail />} />
+            <Route path="/quotes/:id/edit" element={<QuoteForm />} />
             <Route path="/orders" element={<Orders />} />
+            <Route path="/orders/new" element={<OrderForm />} />
+            <Route path="/orders/:id" element={<OrderDetail />} />
+            <Route path="/orders/:id/edit" element={<OrderForm />} />
             <Route path="/schedule" element={<Schedule />} />
+            <Route path="/schedule/new" element={<ScheduleForm />} />
+            <Route path="/schedule/:id" element={<ScheduleDetail />} />
+            <Route path="/schedule/:id/edit" element={<ScheduleForm />} />
             <Route path="/finance" element={<Finance />} />
             <Route path="/finance/transaction/new" element={<TransactionForm />} />
             <Route path="/calculator" element={<Calculator />} />
             <Route path="/team" element={<Team />} />
+            <Route path="/team/:id" element={<TeamDetail />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/messages" element={<Messages />} />
             <Route path="*" element={<NotFound />} />
