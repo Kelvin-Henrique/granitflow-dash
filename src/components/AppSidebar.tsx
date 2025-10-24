@@ -27,7 +27,7 @@ const menuItems = [
 
 export function AppSidebar() {
   return (
-    <Sidebar collapsible="icon" className="border-r border-border">
+    <Sidebar collapsible="icon" className="border-r border-sidebar-border w-64">
       <SidebarHeader className="border-b border-sidebar-border px-4 py-3">
         <h2 className="text-base font-bold text-sidebar-foreground">MarmoERP</h2>
       </SidebarHeader>

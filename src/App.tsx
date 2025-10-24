@@ -16,6 +16,7 @@ import Calculator from "./pages/Calculator";
 import Team from "./pages/Team";
 import Profile from "./pages/Profile";
 import Messages from "./pages/Messages";
+import Notifications from "./pages/Notifications";
 import NotFound from "./pages/NotFound";
 import CustomerDetail from "./pages/CustomerDetail";
 import CustomerForm from "./pages/CustomerForm";
@@ -75,6 +76,7 @@ const App = () => (
             <Route path="/team/:id" element={<TeamDetail />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/messages" element={<Messages />} />
+            <Route path="/notifications" element={<Notifications />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Layout>

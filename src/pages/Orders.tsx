@@ -146,18 +146,18 @@ export default function Orders() {
       </Card>
 
       {/* Pipeline de OS */}
-      <div className="grid grid-cols-1 md:grid-cols-6 gap-4 overflow-x-auto">
+      <div className="grid grid-cols-1 md:grid-cols-6 gap-6 overflow-x-auto pb-4">
         {statusColumns.map((column) => (
-          <Card key={column.key} className={`p-4 border-t-4 ${column.color} min-w-[250px]`}>
+          <Card key={column.key} className={`p-4 border-t-4 ${column.color} min-w-[280px]`}>
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-sm font-semibold text-foreground">{column.label}</h2>
               <Badge variant="outline" className="text-xs">{groupedOrders[column.key]?.length || 0}</Badge>
             </div>
-            <div className="space-y-3">
+            <div className="space-y-4">
               {(groupedOrders[column.key] || []).map((order) => (
                 <Card
                   key={order.id}
-                  className="p-3 cursor-pointer hover:shadow-lg transition-all"
+                  className="p-4 cursor-pointer hover:shadow-lg transition-all bg-card"
                   onClick={() => navigate(`/orders/${order.id}`)}
                 >
                   <div className="space-y-2">
