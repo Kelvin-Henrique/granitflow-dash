@@ -1,28 +1,73 @@
+import { useState, useEffect } from "react";
 import { Users, Briefcase, CheckCircle2, FileText, DollarSign, Calendar, AlertCircle, TrendingUp, ClipboardList } from "lucide-react";
 import { BentoGrid, BentoCard } from "@/components/BentoGrid";
 import { StatCard } from "@/components/StatCard";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
+import { DashboardStats } from "@/types";
+import dashboardService from "@/services/dashboardService";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Dashboard() {
   const navigate = useNavigate();
+  const { toast } = useToast();
+  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  // Mock data - será substituído por dados reais do Supabase
-  const stats = {
-    newCustomers: 12,
-    activeProjects: 8,
-    completedProjects: 15,
-    openQuotes: 5,
+  useEffect(() => {
+    const loadStats = async () => {
+      setLoading(true);
+      try {
+        const { data, error } = await dashboardService.getStats();
+        if (error) {
+          toast({
+            title: "Erro",
+            description: error,
+            variant: "destructive",
+          });
+        } else if (data) {
+          setStats(data);
+        }
+      } catch (error) {
+        toast({
+          title: "Erro",
+          description: "Falha ao carregar estatísticas do dashboard",
+          variant: "destructive",
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadStats();
+  }, [toast]);
+
+  const loadDashboardStats = async () => {
+    setLoading(true);
+    try {
+      const { data, error } = await dashboardService.getStats();
+      if (error) {
+        toast({
+          title: "Erro",
+          description: error,
+          variant: "destructive",
+        });
+      } else if (data) {
+        setStats(data);
+      }
+    } catch (error) {
+      toast({
+        title: "Erro",
+        description: "Falha ao carregar estatísticas do dashboard",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const revenue = {
-    billed: "R$ 45.280,00",
-    toReceive: "R$ 23.150,00",
-    overdue: "R$ 8.900,00",
-    defaultRate: "R$ 2.340,00",
-  };
-
+  // Mock data for orders - será substituído por dados reais em próxima iteração
   const orders = [
     { id: 1, client: "João Silva", project: "Cozinha Granito", status: "orcamento", value: "R$ 8.500,00", date: "2025-10-12" },
     { id: 2, client: "Maria Santos", project: "Banheiro Mármore", status: "aprovada", value: "R$ 12.300,00", date: "2025-10-10" },
@@ -64,12 +109,16 @@ export default function Dashboard() {
     }).format(value);
   };
 
-  const revenueNumbers = {
-    billed: 45280,
-    toReceive: 23150,
-    overdue: 8900,
-    defaultRate: 2340,
-  };
+  if (loading) {
+    return (
+      <div className="space-y-4 animate-fade-in">
+        <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
+        <div className="text-center py-8">
+          <p className="text-muted-foreground">Carregando estatísticas...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4 animate-fade-in">
@@ -135,24 +184,23 @@ export default function Dashboard() {
       <BentoGrid>
         <BentoCard span={3}>
           <StatCard
-            title="Faturado (Mês)"
-            value={formatCurrency(revenueNumbers.billed)}
+            title="Receita Mensal"
+            value={stats ? formatCurrency(stats.monthlyRevenue) : "R$ 0,00"}
             icon={TrendingUp}
             trend={{ value: "15%", positive: true }}
           />
         </BentoCard>
         <BentoCard span={3}>
-          <StatCard title="A Receber" value={formatCurrency(revenueNumbers.toReceive)} icon={Calendar} />
+          <StatCard title="Receita Total" value={stats ? formatCurrency(stats.totalRevenue) : "R$ 0,00"} icon={DollarSign} />
         </BentoCard>
         <BentoCard span={3}>
-          <StatCard title="Em Aberto" value={formatCurrency(revenueNumbers.overdue)} icon={FileText} />
+          <StatCard title="Orçamentos" value={stats ? stats.quotesCount.toString() : "0"} icon={FileText} />
         </BentoCard>
         <BentoCard span={3}>
           <StatCard
-            title="Inadimplência"
-            value={formatCurrency(revenueNumbers.defaultRate)}
+            title="Pedidos Pendentes"
+            value={stats ? stats.pendingOrdersCount.toString() : "0"}
             icon={AlertCircle}
-            trend={{ value: "3%", positive: false }}
           />
         </BentoCard>
       </BentoGrid>
@@ -161,32 +209,31 @@ export default function Dashboard() {
       <BentoGrid>
         <BentoCard span={3}>
           <StatCard
-            title="Clientes Novos (Mês)"
-            value={stats.newCustomers.toString()}
+            title="Total de Clientes"
+            value={stats ? stats.customersCount.toString() : "0"}
             icon={Users}
-            trend={{ value: "+8%", positive: true }}
           />
         </BentoCard>
         <BentoCard span={3}>
           <StatCard
             title="Projetos Ativos"
-            value={stats.activeProjects.toString()}
+            value={stats ? stats.activeProjectsCount.toString() : "0"}
             icon={Briefcase}
           />
         </BentoCard>
         <BentoCard span={3}>
           <StatCard
-            title="Projetos Finalizados (Mês)"
-            value={stats.completedProjects.toString()}
+            title="Total de Projetos"
+            value={stats ? stats.projectsCount.toString() : "0"}
             icon={CheckCircle2}
-            trend={{ value: "+12%", positive: true }}
           />
         </BentoCard>
         <BentoCard span={3}>
           <StatCard
-            title="Orçamentos Abertos"
-            value={stats.openQuotes.toString()}
-            icon={FileText}
+            title="Materiais em Estoque Baixo"
+            value={stats ? stats.lowStockMaterialsCount.toString() : "0"}
+            icon={AlertCircle}
+            trend={stats && stats.lowStockMaterialsCount > 0 ? { value: "Atenção", positive: false } : undefined}
           />
         </BentoCard>
       </BentoGrid>

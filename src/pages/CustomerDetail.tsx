@@ -1,41 +1,49 @@
+
 import { useParams, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 import { ArrowLeft, Mail, Phone, MapPin, Calendar, FileText, Edit, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import customerService from "@/services/customerService";
+import { useToast } from "@/hooks/use-toast";
+import { Customer } from "@/types";
 
 export default function CustomerDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { toast } = useToast();
+  const [customer, setCustomer] = useState<Customer | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Mock data - será substituído por dados reais do Supabase
-  const customer = {
-    id: 1,
-    name: "João Silva",
-    email: "joao@email.com",
-    phone: "(11) 98765-4321",
-    cpfCnpj: "123.456.789-00",
-    status: "ativo",
-    address: "Rua das Flores, 123 - Centro",
-    city: "São Paulo",
-    state: "SP",
-    zipCode: "01234-567",
-    createdAt: "2025-01-15",
-    lastContact: "2025-10-15",
-    notes: "Cliente preferencial, sempre pontual nos pagamentos",
-  };
-
-  const projects = [
-    { id: 1, name: "Cozinha Granito", status: "concluído", value: 8500, date: "2025-09-20" },
-    { id: 2, name: "Banheiro Mármore", status: "em_andamento", value: 12300, date: "2025-10-10" },
-    { id: 3, name: "Bancada Quartzito", status: "orcamento", value: 15800, date: "2025-10-15" },
-  ];
-
-  const quotes = [
-    { id: 1, project: "Lavabo Premium", value: 6200, status: "enviado", date: "2025-10-12" },
-    { id: 2, project: "Sala Sinterizado", value: 22400, status: "aprovado", date: "2025-09-28" },
-  ];
+  useEffect(() => {
+    const fetchCustomer = async () => {
+      setLoading(true);
+      setError(null);
+      if (!id) {
+        setError("ID do cliente não informado.");
+        setLoading(false);
+        return;
+      }
+      const { data, error } = await customerService.getCustomer(Number(id));
+      if (error || !data) {
+        setError(error || "Cliente não encontrado.");
+        setLoading(false);
+        toast({
+          title: "Erro",
+          description: error || "Cliente não encontrado.",
+          variant: "destructive",
+        });
+        return;
+      }
+      setCustomer(data);
+      setLoading(false);
+    };
+    fetchCustomer();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat("pt-BR", {
@@ -58,10 +66,27 @@ export default function CustomerDetail() {
     return colors[status] || "bg-muted text-muted-foreground";
   };
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[300px]">
+        <span className="text-muted-foreground">Carregando dados do cliente...</span>
+      </div>
+    );
+  }
+
+  if (error || !customer) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[300px] gap-4">
+        <span className="text-destructive font-medium">{error || "Cliente não encontrado."}</span>
+        <Button onClick={() => navigate("/customers")}>Voltar para lista</Button>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={() => navigate("/customers")}>
+        <Button variant="ghost" size="icon" onClick={() => navigate("/customers")}> 
           <ArrowLeft className="h-5 w-5" />
         </Button>
         <h1 className="text-2xl font-bold text-foreground">{customer.name}</h1>
@@ -84,8 +109,8 @@ export default function CustomerDetail() {
       <Tabs defaultValue="info" className="space-y-4">
         <TabsList>
           <TabsTrigger value="info">Informações</TabsTrigger>
-          <TabsTrigger value="projects">Projetos</TabsTrigger>
-          <TabsTrigger value="quotes">Orçamentos</TabsTrigger>
+          {/* <TabsTrigger value="projects">Projetos</TabsTrigger>
+          <TabsTrigger value="quotes">Orçamentos</TabsTrigger> */}
           <TabsTrigger value="history">Histórico</TabsTrigger>
         </TabsList>
 
@@ -145,53 +170,7 @@ export default function CustomerDetail() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="projects" className="space-y-4">
-          <div className="grid grid-cols-1 gap-4">
-            {projects.map((project) => (
-              <Card
-                key={project.id}
-                className="p-4 cursor-pointer hover:shadow-lg transition-all"
-                onClick={() => navigate(`/projects/${project.id}`)}
-              >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="font-semibold text-foreground">{project.name}</h3>
-                    <p className="text-sm text-muted-foreground">{project.date}</p>
-                  </div>
-                  <div className="text-right">
-                    <Badge className={getStatusColor(project.status)}>
-                      {project.status.replace("_", " ")}
-                    </Badge>
-                    <p className="font-bold text-foreground mt-1">{formatCurrency(project.value)}</p>
-                  </div>
-                </div>
-              </Card>
-            ))}
-          </div>
-        </TabsContent>
-
-        <TabsContent value="quotes" className="space-y-4">
-          <div className="grid grid-cols-1 gap-4">
-            {quotes.map((quote) => (
-              <Card
-                key={quote.id}
-                className="p-4 cursor-pointer hover:shadow-lg transition-all"
-                onClick={() => navigate(`/quotes/${quote.id}`)}
-              >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="font-semibold text-foreground">{quote.project}</h3>
-                    <p className="text-sm text-muted-foreground">{quote.date}</p>
-                  </div>
-                  <div className="text-right">
-                    <Badge className={getStatusColor(quote.status)}>{quote.status}</Badge>
-                    <p className="font-bold text-foreground mt-1">{formatCurrency(quote.value)}</p>
-                  </div>
-                </div>
-              </Card>
-            ))}
-          </div>
-        </TabsContent>
+        {/* Projetos e Orçamentos reais podem ser implementados aqui futuramente */}
 
         <TabsContent value="history" className="space-y-4">
           <Card className="p-6">
@@ -203,15 +182,6 @@ export default function CustomerDetail() {
                 <div className="flex-1">
                   <p className="font-medium text-foreground">Cadastro realizado</p>
                   <p className="text-sm text-muted-foreground">{customer.createdAt}</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-4 pb-4 border-b border-border">
-                <div className="p-2 bg-success/10 rounded-lg">
-                  <FileText className="h-4 w-4 text-success" />
-                </div>
-                <div className="flex-1">
-                  <p className="font-medium text-foreground">Orçamento aprovado - Sala Sinterizado</p>
-                  <p className="text-sm text-muted-foreground">2025-09-28</p>
                 </div>
               </div>
               <div className="flex items-start gap-4">

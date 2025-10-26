@@ -1,3 +1,4 @@
+import React from "react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "./AppSidebar";
 import { Bell, MessageSquare, User } from "lucide-react";
@@ -11,6 +12,11 @@ interface LayoutProps {
 
 export function Layout({ children }: LayoutProps) {
   const navigate = useNavigate();
+
+  // Limpar qualquer estado de sidebar salvo para garantir que inicie expandido
+  React.useEffect(() => {
+    document.cookie = "sidebar:state=true; path=/; max-age=604800";
+  }, []);
 
   return (
     <SidebarProvider defaultOpen={true}>

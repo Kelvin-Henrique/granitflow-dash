@@ -3,8 +3,11 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "./contexts";
+import { ProtectedRoute } from "./components/ProtectedRoute";
 import { Layout } from "./components/Layout";
 import Dashboard from "./pages/Dashboard";
+import Login from "./pages/Login";
 import Customers from "./pages/Customers";
 import Projects from "./pages/Projects";
 import Materials from "./pages/Materials";
@@ -40,47 +43,59 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <BrowserRouter>
-        <Layout>
+      <AuthProvider>
+        <BrowserRouter>
           <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/customers" element={<Customers />} />
-            <Route path="/customers/new" element={<CustomerForm />} />
-            <Route path="/customers/:id" element={<CustomerDetail />} />
-            <Route path="/customers/:id/edit" element={<CustomerForm />} />
-            <Route path="/projects" element={<Projects />} />
-            <Route path="/projects/new" element={<ProjectForm />} />
-            <Route path="/projects/:id" element={<ProjectDetail />} />
-            <Route path="/projects/:id/edit" element={<ProjectForm />} />
-            <Route path="/materials" element={<Materials />} />
-            <Route path="/materials/new" element={<MaterialForm />} />
-            <Route path="/materials/:id" element={<MaterialDetail />} />
-            <Route path="/materials/:id/edit" element={<MaterialForm />} />
-            <Route path="/materials/:id/add-stock" element={<MaterialForm />} />
-            <Route path="/quotes" element={<Quotes />} />
-            <Route path="/quotes/new" element={<QuoteForm />} />
-            <Route path="/quotes/:id" element={<QuoteDetail />} />
-            <Route path="/quotes/:id/edit" element={<QuoteForm />} />
-            <Route path="/orders" element={<Orders />} />
-            <Route path="/orders/new" element={<OrderForm />} />
-            <Route path="/orders/:id" element={<OrderDetail />} />
-            <Route path="/orders/:id/edit" element={<OrderForm />} />
-            <Route path="/schedule" element={<Schedule />} />
-            <Route path="/schedule/new" element={<ScheduleForm />} />
-            <Route path="/schedule/:id" element={<ScheduleDetail />} />
-            <Route path="/schedule/:id/edit" element={<ScheduleForm />} />
-            <Route path="/finance" element={<Finance />} />
-            <Route path="/finance/transaction/new" element={<TransactionForm />} />
-            <Route path="/calculator" element={<Calculator />} />
-            <Route path="/team" element={<Team />} />
-            <Route path="/team/:id" element={<TeamDetail />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/messages" element={<Messages />} />
-            <Route path="/notifications" element={<Notifications />} />
-            <Route path="*" element={<NotFound />} />
+            <Route path="/login" element={<Login />} />
+            <Route 
+              path="/*" 
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <Routes>
+                      <Route path="/" element={<Dashboard />} />
+                      <Route path="/customers" element={<Customers />} />
+                      <Route path="/customers/new" element={<CustomerForm />} />
+                      <Route path="/customers/:id" element={<CustomerDetail />} />
+                      <Route path="/customers/:id/edit" element={<CustomerForm />} />
+                      <Route path="/projects" element={<Projects />} />
+                      <Route path="/projects/new" element={<ProjectForm />} />
+                      <Route path="/projects/:id" element={<ProjectDetail />} />
+                      <Route path="/projects/:id/edit" element={<ProjectForm />} />
+                      <Route path="/materials" element={<Materials />} />
+                      <Route path="/materials/new" element={<MaterialForm />} />
+                      <Route path="/materials/:id" element={<MaterialDetail />} />
+                      <Route path="/materials/:id/edit" element={<MaterialForm />} />
+                      <Route path="/materials/:id/add-stock" element={<MaterialForm />} />
+                      <Route path="/quotes" element={<Quotes />} />
+                      <Route path="/quotes/new" element={<QuoteForm />} />
+                      <Route path="/quotes/:id" element={<QuoteDetail />} />
+                      <Route path="/quotes/:id/edit" element={<QuoteForm />} />
+                      <Route path="/orders" element={<Orders />} />
+                      <Route path="/orders/new" element={<OrderForm />} />
+                      <Route path="/orders/:id" element={<OrderDetail />} />
+                      <Route path="/orders/:id/edit" element={<OrderForm />} />
+                      <Route path="/schedule" element={<Schedule />} />
+                      <Route path="/schedule/new" element={<ScheduleForm />} />
+                      <Route path="/schedule/:id" element={<ScheduleDetail />} />
+                      <Route path="/schedule/:id/edit" element={<ScheduleForm />} />
+                      <Route path="/finance" element={<Finance />} />
+                      <Route path="/finance/transaction/new" element={<TransactionForm />} />
+                      <Route path="/calculator" element={<Calculator />} />
+                      <Route path="/team" element={<Team />} />
+                      <Route path="/team/:id" element={<TeamDetail />} />
+                      <Route path="/profile" element={<Profile />} />
+                      <Route path="/messages" element={<Messages />} />
+                      <Route path="/notifications" element={<Notifications />} />
+                      <Route path="*" element={<NotFound />} />
+                    </Routes>
+                  </Layout>
+                </ProtectedRoute>
+              } 
+            />
           </Routes>
-        </Layout>
-      </BrowserRouter>
+        </BrowserRouter>
+      </AuthProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );
