@@ -1,0 +1,6 @@
+@GranitFlowApi_HostAddress = http://localhost:5031
+
+GET {{GranitFlowApi_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
