@@ -1,72 +1,76 @@
-import { useState } from "react";
-import { Plus, Search, FileText, Calendar, DollarSign } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Plus, Search, Calendar, DollarSign } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
+import { Order } from "@/types";
+import orderService from "@/services/orderService";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Orders() {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Mock data
-  const orders = [
-    { 
-      id: 1, 
-      client: "João Silva", 
-      project: "Cozinha Granito", 
-      status: "orcamento", 
-      value: 8500.00, 
-      date: "2025-10-12",
-      deadline: "2025-10-25"
-    },
-    { 
-      id: 2, 
-      client: "Maria Santos", 
-      project: "Banheiro Mármore", 
-      status: "aprovada", 
-      value: 12300.00, 
-      date: "2025-10-10",
-      deadline: "2025-10-28"
-    },
-    { 
-      id: 3, 
-      client: "Pedro Costa", 
-      project: "Bancada Quartzito", 
-      status: "producao_interna", 
-      value: 15800.00, 
-      date: "2025-10-08",
-      deadline: "2025-10-22"
-    },
-    { 
-      id: 4, 
-      client: "Ana Lima", 
-      project: "Lavabo Corium", 
-      status: "aguardando_frete", 
-      value: 6200.00, 
-      date: "2025-10-05",
-      deadline: "2025-10-20"
-    },
-    { 
-      id: 5, 
-      client: "Carlos Souza", 
-      project: "Sala Sinterizado", 
-      status: "instalacao", 
-      value: 22400.00, 
-      date: "2025-10-03",
-      deadline: "2025-10-18"
-    },
-    { 
-      id: 6, 
-      client: "Juliana Ribeiro", 
-      project: "Banheira Mármore", 
-      status: "concluida", 
-      value: 18900.00, 
-      date: "2025-09-28",
-      deadline: "2025-10-15"
-    },
-  ];
+  useEffect(() => {
+    loadOrders();
+  }, []);
+
+  const loadOrders = async () => {
+    setLoading(true);
+    try {
+      const { data, error } = await orderService.getOrders();
+      if (error) {
+        toast({
+          title: "Erro",
+          description: error,
+          variant: "destructive",
+        });
+      } else if (data) {
+        setOrders(data);
+      }
+    } catch (error) {
+      toast({
+        title: "Erro",
+        description: "Falha ao carregar pedidos",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSearch = async () => {
+    if (searchTerm.trim()) {
+      setLoading(true);
+      try {
+        const { data, error } = await orderService.getOrders(searchTerm);
+        if (error) {
+          toast({
+            title: "Erro",
+            description: error,
+            variant: "destructive",
+          });
+        } else if (data) {
+          setOrders(data);
+        }
+      } catch (error) {
+        toast({
+          title: "Erro",
+          description: "Falha ao buscar pedidos",
+          variant: "destructive",
+        });
+      } finally {
+        setLoading(false);
+      }
+    } else {
+      loadOrders();
+    }
+  };
 
   const getStatusColor = (status: string) => {
     const colors: Record<string, string> = {
@@ -101,10 +105,10 @@ export default function Orders() {
     }).format(value);
   };
 
-  const filteredOrders = orders.filter(order =>
-    order.client.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    order.project.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return "Sem prazo";
+    return new Date(dateString).toLocaleDateString("pt-BR");
+  };
 
   const groupedOrders = orders.reduce((acc, order) => {
     if (!acc[order.status]) {
@@ -112,7 +116,7 @@ export default function Orders() {
     }
     acc[order.status].push(order);
     return acc;
-  }, {} as Record<string, typeof orders>);
+  }, {} as Record<string, Order[]>);
 
   const statusColumns = [
     { key: "orcamento", label: "Orçamento", color: "border-muted" },
@@ -122,6 +126,23 @@ export default function Orders() {
     { key: "instalacao", label: "Instalação", color: "border-primary" },
     { key: "concluida", label: "Concluída", color: "border-success" },
   ];
+
+  if (loading) {
+    return (
+      <div className="space-y-6 animate-fade-in">
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-bold text-foreground">Ordens de Serviço</h1>
+          <Button onClick={() => navigate("/orders/new")} className="bg-accent hover:bg-accent-hover">
+            <Plus className="mr-2 h-4 w-4" />
+            Nova OS
+          </Button>
+        </div>
+        <div className="text-center py-8">
+          <p className="text-muted-foreground">Carregando pedidos...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -140,6 +161,7 @@ export default function Orders() {
             placeholder="Buscar por cliente ou projeto..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
+            onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
             className="pl-10"
           />
         </div>
@@ -162,15 +184,15 @@ export default function Orders() {
                 >
                   <div className="space-y-2">
                     <div>
-                      <p className="text-xs text-muted-foreground">OS #{order.id.toString().padStart(4, "0")}</p>
-                      <h3 className="font-semibold text-sm text-foreground">{order.client}</h3>
-                      <p className="text-xs text-muted-foreground">{order.project}</p>
+                      <p className="text-xs text-muted-foreground">{order.number}</p>
+                      <h3 className="font-semibold text-sm text-foreground">{order.customerName}</h3>
+                      <p className="text-xs text-muted-foreground">{order.projectName || "Sem projeto"}</p>
                     </div>
 
                     <div className="text-xs space-y-1">
                       <div className="flex items-center gap-1 text-muted-foreground">
                         <Calendar className="h-3 w-3" />
-                        <span>{order.deadline}</span>
+                        <span>{formatDate(order.deadline)}</span>
                       </div>
                       <div className="flex items-center gap-1">
                         <DollarSign className="h-3 w-3 text-success" />

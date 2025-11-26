@@ -1,58 +1,76 @@
-import { useState } from "react";
-import { Plus, Search, FileText, Mail, MessageSquare, CheckCircle } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Plus, Search, Mail, MessageSquare, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
+import { Quote } from "@/types";
+import quoteService from "@/services/quoteService";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Quotes() {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
+  const [quotes, setQuotes] = useState<Quote[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Mock data
-  const quotes = [
-    {
-      id: 1,
-      customer: "João Silva",
-      project: "Cozinha Granito",
-      value: 8500.0,
-      status: "enviado",
-      date: "2025-10-12",
-      validUntil: "2025-10-26",
-      items: 5,
-    },
-    {
-      id: 2,
-      customer: "Maria Santos",
-      project: "Banheiro Mármore",
-      value: 12300.0,
-      status: "aprovado",
-      date: "2025-10-10",
-      validUntil: "2025-10-24",
-      items: 8,
-    },
-    {
-      id: 3,
-      customer: "Pedro Costa",
-      project: "Bancada Quartzito",
-      value: 15800.0,
-      status: "rascunho",
-      date: "2025-10-08",
-      validUntil: "2025-10-22",
-      items: 3,
-    },
-    {
-      id: 4,
-      customer: "Ana Lima",
-      project: "Lavabo Corium",
-      value: 6200.0,
-      status: "enviado",
-      date: "2025-10-05",
-      validUntil: "2025-10-19",
-      items: 4,
-    },
-  ];
+  useEffect(() => {
+    loadQuotes();
+  }, []);
+
+  const loadQuotes = async () => {
+    setLoading(true);
+    try {
+      const { data, error } = await quoteService.getQuotes();
+      if (error) {
+        toast({
+          title: "Erro",
+          description: error,
+          variant: "destructive",
+        });
+      } else if (data) {
+        setQuotes(data);
+      }
+    } catch (error) {
+      toast({
+        title: "Erro",
+        description: "Falha ao carregar orçamentos",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSearch = async () => {
+    if (searchTerm.trim()) {
+      setLoading(true);
+      try {
+        const { data, error } = await quoteService.getQuotes(searchTerm);
+        if (error) {
+          toast({
+            title: "Erro",
+            description: error,
+            variant: "destructive",
+          });
+        } else if (data) {
+          setQuotes(data);
+        }
+      } catch (error) {
+        toast({
+          title: "Erro",
+          description: "Falha ao buscar orçamentos",
+          variant: "destructive",
+        });
+      } finally {
+        setLoading(false);
+      }
+    } else {
+      loadQuotes();
+    }
+  };
 
   const getStatusColor = (status: string) => {
     const colors: Record<string, string> = {
@@ -83,10 +101,26 @@ export default function Quotes() {
     }).format(value);
   };
 
-  const filteredQuotes = quotes.filter(quote =>
-    quote.customer.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    quote.project.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString("pt-BR");
+  };
+
+  if (loading) {
+    return (
+      <div className="space-y-6 animate-fade-in">
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-bold text-foreground">Orçamentos</h1>
+          <Button onClick={() => navigate("/quotes/new")} className="bg-accent hover:bg-accent-hover">
+            <Plus className="mr-2 h-4 w-4" />
+            Novo Orçamento
+          </Button>
+        </div>
+        <div className="text-center py-8">
+          <p className="text-muted-foreground">Carregando orçamentos...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -105,50 +139,56 @@ export default function Quotes() {
             placeholder="Buscar por cliente ou projeto..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
+            onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
             className="pl-10"
           />
         </div>
       </Card>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {filteredQuotes.map((quote) => (
-          <Card
-            key={quote.id}
-            className="p-6 cursor-pointer hover:shadow-lg transition-all hover:scale-[1.01]"
-            onClick={() => navigate(`/quotes/${quote.id}`)}
-          >
-            <div className="space-y-4">
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <h3 className="font-semibold text-lg text-foreground mb-1">{quote.customer}</h3>
-                  <p className="text-sm text-muted-foreground">{quote.project}</p>
+      {quotes.length === 0 ? (
+        <div className="text-center py-8">
+          <p className="text-muted-foreground">Nenhum orçamento encontrado.</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {quotes.map((quote) => (
+            <Card
+              key={quote.id}
+              className="p-6 cursor-pointer hover:shadow-lg transition-all hover:scale-[1.01]"
+              onClick={() => navigate(`/quotes/${quote.id}`)}
+            >
+              <div className="space-y-4">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-lg text-foreground mb-1">{quote.customerName}</h3>
+                    <p className="text-sm text-muted-foreground">{quote.projectName}</p>
+                  </div>
+                  <Badge className={getStatusColor(quote.status)}>
+                    {getStatusLabel(quote.status)}
+                  </Badge>
                 </div>
-                <Badge className={getStatusColor(quote.status)}>
-                  {getStatusLabel(quote.status)}
-                </Badge>
-              </div>
 
-              <div className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">Valor Total</span>
-                  <span className="text-xl font-bold text-foreground">{formatCurrency(quote.value)}</span>
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">Valor Total</span>
+                    <span className="text-xl font-bold text-foreground">{formatCurrency(quote.value)}</span>
+                  </div>
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-muted-foreground">Itens</span>
+                    <span className="text-foreground">{quote.items?.length || 0}</span>
+                  </div>
                 </div>
-                <div className="flex justify-between items-center text-sm">
-                  <span className="text-muted-foreground">Itens</span>
-                  <span className="text-foreground">{quote.items}</span>
-                </div>
-              </div>
 
-              <div className="pt-4 border-t border-border space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Criado em</span>
-                  <span className="text-foreground">{quote.date}</span>
+                <div className="pt-4 border-t border-border space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Criado em</span>
+                    <span className="text-foreground">{formatDate(quote.createdAt)}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Válido até</span>
+                    <span className="text-foreground">{formatDate(quote.validUntil)}</span>
+                  </div>
                 </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Válido até</span>
-                  <span className="text-foreground">{quote.validUntil}</span>
-                </div>
-              </div>
 
               {quote.status === "enviado" && (
                 <div className="flex gap-2 pt-2">
@@ -192,10 +232,11 @@ export default function Quotes() {
                   Converter em OS
                 </Button>
               )}
-            </div>
-          </Card>
-        ))}
-      </div>
+              </div>
+            </Card>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

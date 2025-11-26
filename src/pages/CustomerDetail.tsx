@@ -45,6 +45,38 @@ export default function CustomerDetail() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
+  const handleDelete = async () => {
+    if (!id || !window.confirm("Tem certeza que deseja excluir este cliente? Esta ação não pode ser desfeita.")) {
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const { error } = await customerService.deleteCustomer(Number(id));
+      if (error) {
+        toast({
+          title: "Erro",
+          description: error,
+          variant: "destructive",
+        });
+        return;
+      }
+      toast({
+        title: "Cliente excluído",
+        description: "O cliente foi removido com sucesso.",
+      });
+      navigate("/customers");
+    } catch (error) {
+      toast({
+        title: "Erro",
+        description: "Falha ao excluir cliente",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat("pt-BR", {
       style: "currency",
@@ -96,11 +128,11 @@ export default function CustomerDetail() {
       </div>
 
       <div className="flex gap-3">
-        <Button onClick={() => navigate(`/customers/${id}/edit`)}>
+        <Button onClick={() => navigate(`/customers/${id}/edit`)} disabled={loading}>
           <Edit className="mr-2 h-4 w-4" />
           Editar
         </Button>
-        <Button variant="destructive">
+        <Button variant="destructive" onClick={handleDelete} disabled={loading}>
           <Trash2 className="mr-2 h-4 w-4" />
           Excluir
         </Button>

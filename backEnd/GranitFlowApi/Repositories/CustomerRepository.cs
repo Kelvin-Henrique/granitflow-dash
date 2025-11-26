@@ -10,9 +10,17 @@ public class CustomerRepository : GenericRepository<Customer>, ICustomerReposito
     {
     }
 
+    public override async Task<IEnumerable<Customer>> GetAllAsync()
+    {
+        return await _dbSet
+            .Include(c => c.Projects)
+            .ToListAsync();
+    }
+
     public async Task<IEnumerable<Customer>> SearchAsync(string searchTerm)
     {
         return await _dbSet
+            .Include(c => c.Projects)
             .Where(c => c.Name.Contains(searchTerm) || 
                        c.Email.Contains(searchTerm) ||
                        c.City.Contains(searchTerm))
@@ -23,7 +31,6 @@ public class CustomerRepository : GenericRepository<Customer>, ICustomerReposito
     {
         return await _dbSet
             .Include(c => c.Projects)
-            .Include(c => c.Quotes)
             .FirstOrDefaultAsync(c => c.Id == id);
     }
 

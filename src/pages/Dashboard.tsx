@@ -5,34 +5,51 @@ import { StatCard } from "@/components/StatCard";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
-import { DashboardStats } from "@/types";
+import { DashboardStats, Order } from "@/types";
 import dashboardService from "@/services/dashboardService";
+import orderService from "@/services/orderService";
 import { useToast } from "@/hooks/use-toast";
 
 export default function Dashboard() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const loadStats = async () => {
+    const loadDashboardData = async () => {
       setLoading(true);
       try {
-        const { data, error } = await dashboardService.getStats();
-        if (error) {
+        const [statsResponse, ordersResponse] = await Promise.all([
+          dashboardService.getStats(),
+          orderService.getOrders()
+        ]);
+
+        if (statsResponse.error) {
           toast({
             title: "Erro",
-            description: error,
+            description: statsResponse.error,
             variant: "destructive",
           });
-        } else if (data) {
-          setStats(data);
+        } else if (statsResponse.data) {
+          setStats(statsResponse.data);
+        }
+
+        if (ordersResponse.error) {
+          toast({
+            title: "Erro",
+            description: ordersResponse.error,
+            variant: "destructive",
+          });
+        } else if (ordersResponse.data) {
+          // Pegar apenas os últimos 5 pedidos
+          setOrders(ordersResponse.data.slice(0, 5));
         }
       } catch (error) {
         toast({
           title: "Erro",
-          description: "Falha ao carregar estatísticas do dashboard",
+          description: "Falha ao carregar dados do dashboard",
           variant: "destructive",
         });
       } finally {
@@ -40,41 +57,8 @@ export default function Dashboard() {
       }
     };
 
-    loadStats();
+    loadDashboardData();
   }, [toast]);
-
-  const loadDashboardStats = async () => {
-    setLoading(true);
-    try {
-      const { data, error } = await dashboardService.getStats();
-      if (error) {
-        toast({
-          title: "Erro",
-          description: error,
-          variant: "destructive",
-        });
-      } else if (data) {
-        setStats(data);
-      }
-    } catch (error) {
-      toast({
-        title: "Erro",
-        description: "Falha ao carregar estatísticas do dashboard",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Mock data for orders - será substituído por dados reais em próxima iteração
-  const orders = [
-    { id: 1, client: "João Silva", project: "Cozinha Granito", status: "orcamento", value: "R$ 8.500,00", date: "2025-10-12" },
-    { id: 2, client: "Maria Santos", project: "Banheiro Mármore", status: "aprovada", value: "R$ 12.300,00", date: "2025-10-10" },
-    { id: 3, client: "Pedro Costa", project: "Bancada Quartzito", status: "producao_interna", value: "R$ 15.800,00", date: "2025-10-08" },
-    { id: 4, client: "Ana Lima", project: "Lavabo Corium", status: "aguardando_frete", value: "R$ 6.200,00", date: "2025-10-05" },
-    { id: 5, client: "Carlos Souza", project: "Sala Sinterizado", status: "instalacao", value: "R$ 22.400,00", date: "2025-10-03" },
-  ];
 
   const getStatusColor = (status: string) => {
     const colors: Record<string, string> = {
@@ -107,6 +91,10 @@ export default function Dashboard() {
       style: "currency",
       currency: "BRL",
     }).format(value);
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString("pt-BR");
   };
 
   if (loading) {
@@ -246,25 +234,31 @@ export default function Dashboard() {
             <Button onClick={() => navigate("/orders")}>Ver Todas</Button>
           </div>
           <div className="space-y-3">
-            {orders.map((order) => (
-              <div
-                key={order.id}
-                className="flex items-center justify-between p-4 bg-muted/30 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer"
-                onClick={() => navigate(`/orders/${order.id}`)}
-              >
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-1">
-                    <h3 className="font-semibold text-foreground">{order.client}</h3>
-                    <Badge className={getStatusColor(order.status)}>{getStatusLabel(order.status)}</Badge>
-                  </div>
-                  <p className="text-sm text-muted-foreground">{order.project}</p>
-                </div>
-                <div className="text-right">
-                  <p className="font-bold text-foreground">{order.value}</p>
-                  <p className="text-xs text-muted-foreground">{order.date}</p>
-                </div>
+            {orders.length === 0 ? (
+              <div className="text-center py-8">
+                <p className="text-muted-foreground">Nenhum pedido encontrado.</p>
               </div>
-            ))}
+            ) : (
+              orders.map((order) => (
+                <div
+                  key={order.id}
+                  className="flex items-center justify-between p-4 bg-muted/30 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer"
+                  onClick={() => navigate(`/orders/${order.id}`)}
+                >
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-1">
+                      <h3 className="font-semibold text-foreground">{order.customerName}</h3>
+                      <Badge className={getStatusColor(order.status)}>{getStatusLabel(order.status)}</Badge>
+                    </div>
+                    <p className="text-sm text-muted-foreground">{order.projectName || "Sem projeto"}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-bold text-foreground">{formatCurrency(order.value)}</p>
+                    <p className="text-xs text-muted-foreground">{formatDate(order.createdAt)}</p>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </BentoCard>
       </BentoGrid>

@@ -156,6 +156,41 @@ app.MapGet("/api/customers", async (ICustomerRepository customerRepository, stri
     }
 }).RequireAuthorization();
 
+app.MapGet("/api/customers/{id}", async (int id, ICustomerRepository customerRepository) =>
+{
+    try
+    {
+        var customer = await customerRepository.GetWithProjectsAsync(id);
+        
+        if (customer == null)
+            return Results.NotFound(new { message = "Cliente não encontrado" });
+        
+        var customerDto = new CustomerDto
+        {
+            Id = customer.Id,
+            Name = customer.Name,
+            Email = customer.Email,
+            Phone = customer.Phone,
+            CpfCnpj = customer.CpfCnpj,
+            Status = customer.Status,
+            Address = customer.Address,
+            City = customer.City,
+            State = customer.State,
+            ZipCode = customer.ZipCode,
+            CreatedAt = customer.CreatedAt,
+            LastContact = customer.LastContact,
+            Notes = customer.Notes,
+            ProjectsCount = customer.Projects?.Count ?? 0
+        };
+        
+        return Results.Ok(customerDto);
+    }
+    catch (Exception ex)
+    {
+        return Results.Problem($"Internal server error: {ex.Message}");
+    }
+}).RequireAuthorization();
+
 app.MapPost("/api/customers", async (CreateCustomerDto createCustomerDto, ICustomerRepository customerRepository) =>
 {
     try
@@ -195,6 +230,69 @@ app.MapPost("/api/customers", async (CreateCustomerDto createCustomerDto, ICusto
             Notes = createdCustomer.Notes,
             ProjectsCount = 0
         });
+    }
+    catch (Exception ex)
+    {
+        return Results.Problem($"Internal server error: {ex.Message}");
+    }
+}).RequireAuthorization();
+
+app.MapPut("/api/customers/{id}", async (int id, CreateCustomerDto updateCustomerDto, ICustomerRepository customerRepository) =>
+{
+    try
+    {
+        var existingCustomer = await customerRepository.GetByIdAsync(id);
+        
+        if (existingCustomer == null)
+            return Results.NotFound(new { message = "Cliente não encontrado" });
+        
+        existingCustomer.Name = updateCustomerDto.Name;
+        existingCustomer.Email = updateCustomerDto.Email;
+        existingCustomer.Phone = updateCustomerDto.Phone;
+        existingCustomer.CpfCnpj = updateCustomerDto.CpfCnpj;
+        existingCustomer.Status = updateCustomerDto.Status;
+        existingCustomer.Address = updateCustomerDto.Address;
+        existingCustomer.City = updateCustomerDto.City;
+        existingCustomer.State = updateCustomerDto.State;
+        existingCustomer.ZipCode = updateCustomerDto.ZipCode;
+        existingCustomer.Notes = updateCustomerDto.Notes;
+        
+        var updatedCustomer = await customerRepository.UpdateAsync(existingCustomer);
+        
+        return Results.Ok(new CustomerDto
+        {
+            Id = updatedCustomer.Id,
+            Name = updatedCustomer.Name,
+            Email = updatedCustomer.Email,
+            Phone = updatedCustomer.Phone,
+            CpfCnpj = updatedCustomer.CpfCnpj,
+            Status = updatedCustomer.Status,
+            Address = updatedCustomer.Address,
+            City = updatedCustomer.City,
+            State = updatedCustomer.State,
+            ZipCode = updatedCustomer.ZipCode,
+            CreatedAt = updatedCustomer.CreatedAt,
+            LastContact = updatedCustomer.LastContact,
+            Notes = updatedCustomer.Notes,
+            ProjectsCount = updatedCustomer.Projects?.Count ?? 0
+        });
+    }
+    catch (Exception ex)
+    {
+        return Results.Problem($"Internal server error: {ex.Message}");
+    }
+}).RequireAuthorization();
+
+app.MapDelete("/api/customers/{id}", async (int id, ICustomerRepository customerRepository) =>
+{
+    try
+    {
+        var success = await customerRepository.DeleteAsync(id);
+        
+        if (!success)
+            return Results.NotFound(new { message = "Cliente não encontrado" });
+        
+        return Results.NoContent();
     }
     catch (Exception ex)
     {
