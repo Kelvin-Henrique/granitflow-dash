@@ -16,6 +16,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<Quote> Quotes { get; set; }
     public DbSet<QuoteItem> QuoteItems { get; set; }
     public DbSet<Order> Orders { get; set; }
+    public DbSet<OrderItem> OrderItems { get; set; }
     public DbSet<ScheduleEvent> ScheduleEvents { get; set; }
     public DbSet<ProjectMaterial> ProjectMaterials { get; set; }
     public DbSet<StockMovement> StockMovements { get; set; }
@@ -85,6 +86,14 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<StockMovement>()
             .Property(e => e.Balance)
             .HasPrecision(10, 2);
+
+        modelBuilder.Entity<OrderItem>()
+            .Property(e => e.UnitPrice)
+            .HasPrecision(10, 2);
+
+        modelBuilder.Entity<OrderItem>()
+            .Property(e => e.TotalPrice)
+            .HasPrecision(12, 2);
 
         // Configure indexes
         modelBuilder.Entity<User>()

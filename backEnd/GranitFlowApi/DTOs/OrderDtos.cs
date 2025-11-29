@@ -1,5 +1,23 @@
 namespace GranitFlowApi.DTOs;
 
+public class OrderItemDto
+{
+    public int Id { get; set; }
+    public int MaterialId { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public decimal Quantity { get; set; }
+    public decimal UnitPrice { get; set; }
+    public decimal TotalPrice { get; set; }
+}
+
+public class CreateOrderItemDto
+{
+    public int MaterialId { get; set; }
+    public decimal Quantity { get; set; }
+    public decimal UnitPrice { get; set; }
+    public decimal TotalPrice { get; set; }
+}
+
 public class OrderDto
 {
     public int Id { get; set; }
@@ -13,6 +31,7 @@ public class OrderDto
     public DateTime? Deadline { get; set; }
     public int Progress { get; set; }
     public DateTime CreatedAt { get; set; }
+    public List<OrderItemDto> Items { get; set; } = new();
 }
 
 public class CreateOrderDto
@@ -22,6 +41,7 @@ public class CreateOrderDto
     public string Status { get; set; } = "orcamento";
     public decimal Value { get; set; }
     public DateTime? Deadline { get; set; }
+    public List<CreateOrderItemDto> Items { get; set; } = new();
 }
 
 public class UpdateOrderDto
@@ -32,4 +52,5 @@ public class UpdateOrderDto
     public decimal Value { get; set; }
     public DateTime? Deadline { get; set; }
     public int Progress { get; set; }
+    public List<CreateOrderItemDto> Items { get; set; } = new();
 }

@@ -47,4 +47,6 @@ public class Order
 
     [ForeignKey("ProjectId")]
     public virtual Project? Project { get; set; }
+
+    public virtual ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
 }

@@ -20,7 +20,7 @@ public class QuoteItemDto
     public int Id { get; set; }
     public int? MaterialId { get; set; }
     public string Name { get; set; } = string.Empty;
-    public string Quantity { get; set; } = string.Empty;
+    public decimal Quantity { get; set; }
     public decimal UnitPrice { get; set; }
     public decimal TotalPrice { get; set; }
 }
@@ -37,9 +37,8 @@ public class CreateQuoteDto
 
 public class CreateQuoteItemDto
 {
-    public int? MaterialId { get; set; }
-    public string Name { get; set; } = string.Empty;
-    public string Quantity { get; set; } = string.Empty;
+    public int MaterialId { get; set; }
+    public decimal Quantity { get; set; }
     public decimal UnitPrice { get; set; }
     public decimal TotalPrice { get; set; }
 }
