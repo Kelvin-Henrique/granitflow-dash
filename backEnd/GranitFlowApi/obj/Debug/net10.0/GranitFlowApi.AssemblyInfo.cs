@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("GranitFlowApi")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b53fb4dbdfd648dc8a49120dbeab16b10ea2fa7b")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+d8f431c40718dc93abcd9cf5d0d6bde6c872441c")]
 [assembly: System.Reflection.AssemblyProductAttribute("GranitFlowApi")]
 [assembly: System.Reflection.AssemblyTitleAttribute("GranitFlowApi")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
